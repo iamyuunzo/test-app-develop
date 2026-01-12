@@ -1,3 +1,27 @@
+# React Native AIQ Prototype
+
+React Native + Expo 기반으로 구현한
+AI 응답 비교 프로토타입 앱입니다.
+
+## 주요 기능
+- 질문 입력
+- 4개 AI 응답 비교 (mock 데이터)
+- 질문 횟수 제한
+- AI 하나 선택
+- 요약 프롬프트 제공
+
+## 기술 스택
+- React Native
+- Expo
+- TypeScript
+
+## 실행
+```bash
+npm install
+npm start
+```
+---
+
 ## 1. CRUD 흐름 쪼개기
 
 ### 1️⃣ Create — “질문 생성”
@@ -35,7 +59,7 @@
 * GPT 응답 (mock)
 * Claude 응답 (mock)
 * Gemini 응답 (mock)
-* LLaMA 응답 (mock)
+* Perplexity 응답 (mock)
 
 👉 이걸 **세로 스크롤 / 카드 4개**로 보여줌
 
@@ -182,7 +206,7 @@ AI 선택 + 요약 프롬프트
 [ GPT 응답 카드 ]
 [ Claude 응답 카드 ]
 [ Gemini 응답 카드 ]
-[ LLaMA 응답 카드 ]
+[ Perplexity 응답 카드 ]
 ```
 
 #### 옵션 B

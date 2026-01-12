@@ -1,98 +1,96 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from "react";
+import { View } from "react-native";
+import { DarkTheme } from "../../src/theme/dark";
+import { LightTheme } from "../../src/theme/light";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import CompareAnswersScreen from "../../src/screens/CompareAnswersScreen";
+import QuestionInputScreen from "../../src/screens/QuestionInputScreen";
+import SelectAIScreen from "../../src/screens/SelectAIScreen";
+import { ThemeContext } from "@/src/context/ThemeContext";
 
-export default function HomeScreen() {
+type Step = "INPUT" | "COMPARE" | "SELECT";
+
+export default function Index() {
+  /**
+   * =========================
+   * 1. 앱 전체 상태 정의
+   * =========================
+   */
+
+  // 현재 테마 모드
+  const [mode, setMode] = useState<"dark" | "light">("dark");
+
+  const theme = mode === "dark" ? DarkTheme : LightTheme;
+
+  const toggleTheme = () => {
+    setMode((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  // 현재 화면 단계
+  const [step, setStep] = useState<Step>("INPUT");
+
+  // 사용자가 입력한 질문
+  const [question, setQuestion] = useState("");
+
+  // 남은 질문 횟수 (최대 5번)
+  const [remainingCount, setRemainingCount] = useState(5);
+
+  // 선택한 AI 이름
+  const [selectedAI, setSelectedAI] = useState<string | null>(null);
+
+  /**
+   * =========================
+   * 2. 화면 분기 렌더링
+   * =========================
+   */
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ThemeContext.Provider value={{ theme, mode, toggleTheme }}>
+      <View
+        style={{
+          flex: 1,
+        }}
+      >
+        {step === "INPUT" && (
+          <QuestionInputScreen
+            onSubmit={(inputQuestion: string) => {
+              setQuestion(inputQuestion);
+              setStep("COMPARE");
+            }}
+          />
+        )}
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        {step === "COMPARE" && (
+          <CompareAnswersScreen
+            question={question}
+            remainingCount={remainingCount}
+            onAskAgain={() => {
+              setRemainingCount((prev) => prev - 1);
+              if (remainingCount - 1 <= 0) {
+                setStep("SELECT");
+              }
+            }}
+            onFinishCompare={() => {
+              setStep("SELECT");
+            }}
+          />
+        )}
+
+        {step === "SELECT" && (
+          <SelectAIScreen
+            selectedAI={selectedAI}
+            onSelectAI={(aiName: string) => {
+              setSelectedAI(aiName);
+            }}
+            onRestart={() => {
+              setQuestion("");
+              setRemainingCount(5);
+              setSelectedAI(null);
+              setStep("INPUT");
+            }}
+          />
+        )}
+      </View>
+    </ThemeContext.Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
